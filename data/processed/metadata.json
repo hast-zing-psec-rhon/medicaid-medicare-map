@@ -1,0 +1,27 @@
+{
+  "source_stats": {
+    "cms_total_rows": 6103,
+    "cms_year_counts": {
+      "2022": 5,
+      "2023": 3534,
+      "2024": 2564
+    },
+    "selected_fiscal_year": 2023
+  },
+  "methodology": {
+    "medicaid": "Net Revenue from Medicaid from CMS hospital cost reports",
+    "medicare": "Estimated from Medicare IPPS payment components plus Medicare inpatient day-share proxy, capped by total net patient revenue",
+    "federal_state_split": "State-level FMAP percentages from Federal Register FY 2026 table"
+  },
+  "sources": [
+    {
+      "name": "CMS Hospital Cost Reports",
+      "url": "https://data.cms.gov/dataset/44060663-47d8-4ced-a115-b53b4c270acb"
+    },
+    {
+      "name": "Federal Register FMAP FY2026",
+      "url": "https://www.federalregister.gov/documents/full_text/html/2024/11/29/2024-27910.html"
+    }
+  ],
+  "generated_at_utc": "2026-02-27T16:13:12.056043+00:00"
+}

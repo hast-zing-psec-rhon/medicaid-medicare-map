@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Medicaid / Medicare Hospital Exposure Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Medicaid / Medicare Hospital Exposure Dashboard</h1>
+      <p>Prototype using CMS hospital cost reports + FMAP split for credit-risk screening.</p>
+    </header>
+
+    <section class="controls">
+      <label>
+        Fiscal Year
+        <select id="yearSelect"></select>
+      </label>
+      <label>
+        Map Metric
+        <select id="metricSelect">
+          <option value="medicaid_total">Medicaid total</option>
+          <option value="medicare_total">Medicare total</option>
+          <option value="public_total">Public total (Medicare + Medicaid)</option>
+          <option value="public_dependency">Public dependency ratio</option>
+        </select>
+      </label>
+      <button id="refreshBtn">Refresh</button>
+    </section>
+
+    <main>
+      <section class="panel large">
+        <h2>National State Map</h2>
+        <div id="stateMap"></div>
+      </section>
+
+      <section class="panel">
+        <h2>State Ranking</h2>
+        <div class="table-wrap">
+          <table id="stateTable">
+            <thead>
+              <tr>
+                <th>State</th>
+                <th>Medicaid</th>
+                <th>Medicare</th>
+                <th>Fed Medicaid</th>
+                <th>State Medicaid</th>
+                <th>Facilities</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="selectedStatePanel">
+        <h2>State Drilldown: <span id="selectedStateLabel">(none)</span></h2>
+        <div id="stateSummary" class="summary-grid"></div>
+
+        <div class="inline-controls">
+          <label>
+            Ownership
+            <select id="ownershipFilter">
+              <option value="all">All</option>
+              <option value="for_profit">For-profit</option>
+              <option value="not_for_profit">Not-for-profit</option>
+              <option value="government">Government</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </label>
+          <label>
+            Group by chain
+            <input id="groupByChain" type="checkbox" />
+          </label>
+          <label>
+            Sort
+            <select id="facilitySort">
+              <option value="medicaid_revenue">Medicaid revenue</option>
+              <option value="medicare_revenue">Medicare revenue</option>
+              <option value="total_revenue">Total revenue</option>
+              <option value="public_dependency">Public dependency</option>
+            </select>
+          </label>
+          <button id="exportBtn">Export CSV</button>
+        </div>
+
+        <div class="table-wrap">
+          <table id="facilityTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Ownership</th>
+                <th>Chain</th>
+                <th>Total Rev</th>
+                <th>Medicare</th>
+                <th>Medicaid</th>
+                <th>Fed Medicaid</th>
+                <th>State Medicaid</th>
+                <th>Public Dep.</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Policy Stress Scenario</h2>
+        <div class="scenario-grid">
+          <label>Medicare cut %
+            <input id="medicareCut" type="range" min="0" max="40" value="0" />
+            <span id="medicareCutVal">0%</span>
+          </label>
+          <label>Federal Medicaid cut %
+            <input id="fedCut" type="range" min="0" max="40" value="0" />
+            <span id="fedCutVal">0%</span>
+          </label>
+          <label>State Medicaid cut %
+            <input id="stateCut" type="range" min="0" max="40" value="0" />
+            <span id="stateCutVal">0%</span>
+          </label>
+        </div>
+        <button id="runScenarioBtn">Run Scenario</button>
+        <div id="scenarioSummary" class="summary-grid"></div>
+        <div class="table-wrap">
+          <table id="scenarioTable">
+            <thead>
+              <tr>
+                <th>Facility</th>
+                <th>State</th>
+                <th>Baseline Rev</th>
+                <th>Shocked Rev</th>
+                <th>Revenue at Risk</th>
+                <th>Risk %</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <small id="sourceNote"></small>
+    </footer>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
