@@ -65,6 +65,9 @@ Service management commands:
 
 The app is served at `http://127.0.0.1:8080`.
 
+Local/API health endpoint:
+- `http://127.0.0.1:8080/health`
+
 ## Data sources (authentic public)
 
 1. CMS Hospital Cost Reports API (dataset ID: `44060663-47d8-4ced-a115-b53b4c270acb`)

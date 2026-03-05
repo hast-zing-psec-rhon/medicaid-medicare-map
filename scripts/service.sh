@@ -81,7 +81,7 @@ status_service() {
 
   code="000"
   for _ in {1..5}; do
-    curl -s -o /tmp/${LABEL}.health -w "%{http_code}" http://127.0.0.1:8080/healthz > /tmp/${LABEL}.code || true
+    curl -s -o /tmp/${LABEL}.health -w "%{http_code}" http://127.0.0.1:8080/health > /tmp/${LABEL}.code || true
     code=$(cat /tmp/${LABEL}.code 2>/dev/null || echo "000")
     [[ "$code" == "200" ]] && break
     sleep 1

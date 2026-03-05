@@ -205,12 +205,12 @@ def home() -> FileResponse | dict:
         return {
             "ok": True,
             "service": "medicaid-medicare-map-api",
-            "docs_hint": "/healthz",
+            "docs_hint": "/health",
         }
     return FileResponse(str(FRONTEND_DIR / "index.html"))
 
 
-@app.get("/healthz")
+@app.get("/health")
 def healthcheck() -> dict:
     return {"ok": True}
 
