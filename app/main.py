@@ -33,10 +33,12 @@ from app.emma_cache import EmmaCache
 from app.emma_client import EmmaClient
 from app.emma_fallback_store import EmmaFallbackStore
 from app.portfolio_store import PortfolioStore
+from app.runtime import get_runtime_settings
 from app.schemas import ScenarioRequest
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_DIR = ROOT / "frontend"
+RUNTIME = get_runtime_settings()
 
 
 @asynccontextmanager
@@ -60,8 +62,9 @@ app.state.portfolio_store = PortfolioStore.load()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=RUNTIME.allowed_origins,
+    allow_origin_regex=RUNTIME.allowed_origin_regex,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -192,11 +195,18 @@ def _refresh_cache_async(facility_link: dict, portfolio_id: str) -> None:
     thread.start()
 
 
-app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+if RUNTIME.serve_frontend:
+    app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
 
-@app.get("/", response_class=FileResponse)
-def home() -> FileResponse:
+@app.get("/", response_model=None)
+def home() -> FileResponse | dict:
+    if not RUNTIME.serve_frontend:
+        return {
+            "ok": True,
+            "service": "medicaid-medicare-map-api",
+            "docs_hint": "/healthz",
+        }
     return FileResponse(str(FRONTEND_DIR / "index.html"))
 
 

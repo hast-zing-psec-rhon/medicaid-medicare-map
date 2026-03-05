@@ -6,6 +6,8 @@ __pycache__/
 
 # Optional local artifacts
 /tmp/
+dist/
+.vercel/
 
 # Local runtime/cache artifacts
 data/processed/emma_cache.db

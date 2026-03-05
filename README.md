@@ -110,6 +110,102 @@ cd "/Users/mv/code/Municipal Bonds/Medicaid - Medicare Map"
 .venv/bin/pytest -q
 ```
 
+## Deployment architecture
+
+- **Frontend:** Vercel static hosting
+- **Backend:** Google Cloud Run (containerized FastAPI)
+- **Browser/API connection:** frontend calls the backend via `PUBLIC_API_BASE_URL`
+
+This repo is now set up for that split deployment model:
+- `vercel.json` builds a static frontend into `/Users/mv/code/Municipal Bonds/Medicaid - Medicare Map/dist`
+- `Dockerfile` packages the FastAPI backend for Cloud Run
+- deployment helpers live in `/Users/mv/code/Municipal Bonds/Medicaid - Medicare Map/scripts`
+
+## Deployment-sensitive environment variables
+
+Backend env vars:
+- `APP_SERVE_FRONTEND=false` for Cloud Run API-only mode
+- `APP_ALLOWED_ORIGINS` comma-separated exact origins
+- `APP_ALLOWED_ORIGIN_REGEX` regex for preview domains (default deploy script uses `^https://.*\\.vercel\\.app$`)
+
+Frontend build env vars:
+- `PUBLIC_API_BASE_URL` — the Cloud Run base URL, e.g. `https://medicaid-medicare-map-api-xxxxx-uc.a.run.app`
+
+## Build frontend locally for Vercel
+
+```bash
+cd "/Users/mv/code/Municipal Bonds/Medicaid - Medicare Map"
+npm run build
+```
+
+This writes:
+- `/Users/mv/code/Municipal Bonds/Medicaid - Medicare Map/dist/index.html`
+- `/Users/mv/code/Municipal Bonds/Medicaid - Medicare Map/dist/static/app.js`
+- `/Users/mv/code/Municipal Bonds/Medicaid - Medicare Map/dist/static/styles.css`
+- `/Users/mv/code/Municipal Bonds/Medicaid - Medicare Map/dist/static/config.js`
+
+To point the frontend at a deployed backend during build:
+
+```bash
+PUBLIC_API_BASE_URL="https://YOUR-CLOUD-RUN-URL" npm run build
+```
+
+## Deploy backend to Google Cloud Run
+
+Prerequisites:
+- authenticated `gcloud`
+- a target Google Cloud project
+
+Deploy with:
+
+```bash
+cd "/Users/mv/code/Municipal Bonds/Medicaid - Medicare Map"
+./scripts/deploy_cloud_run.sh YOUR_GCP_PROJECT_ID
+```
+
+Optional args:
+
+```bash
+./scripts/deploy_cloud_run.sh YOUR_GCP_PROJECT_ID medicaid-medicare-map-api us-central1
+```
+
+The script:
+- launches `gcloud auth login` if needed
+- enables required APIs
+- deploys from source to Cloud Run
+- prints the backend URL for frontend configuration
+
+## Deploy frontend to Vercel
+
+Deploy with a specific backend URL:
+
+```bash
+cd "/Users/mv/code/Municipal Bonds/Medicaid - Medicare Map"
+./scripts/deploy_vercel.sh https://YOUR-CLOUD-RUN-URL
+```
+
+The script:
+- launches `vercel login` if needed
+- deploys with `PUBLIC_API_BASE_URL` set at build time
+
+## One-command full-stack deployment
+
+```bash
+cd "/Users/mv/code/Municipal Bonds/Medicaid - Medicare Map"
+./scripts/deploy_full_stack.sh YOUR_GCP_PROJECT_ID
+```
+
+This:
+1. deploys the backend to Cloud Run,
+2. captures the resulting Cloud Run URL,
+3. deploys the frontend to Vercel against that backend.
+
+## Deployment caveats
+
+- `data/processed/emma_cache.db` is intentionally excluded from deployment source; Cloud Run will rebuild cache entries on demand.
+- `data/manual/portfolio_holdings.csv` is intentionally excluded from deployment source; portfolio-linkage endpoints will return empty/default results unless you add a production data path later (for example GCS or a managed database).
+- `data/manual/emma_issuer_map.csv` is also excluded from Cloud Run upload; runtime behavior is still supported because the deployed processed facility data already carries the mapped EMMA fields baked into `data/processed/facilities.csv`.
+
 ## Manual chain overrides
 
 Edit:

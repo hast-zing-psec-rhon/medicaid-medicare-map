@@ -2,6 +2,8 @@ const $ = (id) => document.getElementById(id);
 
 const THEME_KEY = 'mm_theme';
 const PRESET_KEY = 'mm_scenario_presets';
+const APP_CONFIG = window.__APP_CONFIG__ || {};
+const API_BASE_URL = String(APP_CONFIG.API_BASE_URL || '').replace(/\/+$/, '');
 
 const appState = {
   year: null,
@@ -234,10 +236,18 @@ function setLoading(isLoading) {
   document.body.style.cursor = isLoading ? 'progress' : 'default';
 }
 
+function apiUrl(path) {
+  const normalized = String(path || '');
+  if (/^https?:\/\//i.test(normalized)) return normalized;
+  if (!API_BASE_URL) return normalized;
+  if (!normalized.startsWith('/')) return `${API_BASE_URL}/${normalized}`;
+  return `${API_BASE_URL}${normalized}`;
+}
+
 async function api(path, options = {}, retryFn = null) {
   const key = `${options.method || 'GET'}::${path}::${options.body || ''}`;
   try {
-    const res = await fetch(path, options);
+    const res = await fetch(apiUrl(path), options);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     appState.cache.set(key, data);
@@ -1843,7 +1853,7 @@ function exportFacilitiesCsv() {
     payer_scope: appState.payerScope,
     taxonomy_view: appState.taxonomyView,
   });
-  window.open(`/api/v1/exports/facilities.csv?${params.toString()}`, '_blank');
+  window.open(apiUrl(`/api/v1/exports/facilities.csv?${params.toString()}`), '_blank');
 }
 
 function isInputFocused() {

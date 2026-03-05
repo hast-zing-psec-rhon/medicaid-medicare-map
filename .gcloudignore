@@ -1,0 +1,15 @@
+.gcloudignore
+.git
+.gitignore
+.venv
+.pytest_cache
+.vercel
+dist
+tmp
+__pycache__
+*.pyc
+.DS_Store
+FRONTEND_DESIGN_PLAN.md
+data/processed/emma_cache.db
+data/manual/portfolio_holdings.csv
+data/manual/emma_issuer_map.csv

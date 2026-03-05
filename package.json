@@ -1,0 +1,7 @@
+{
+  "name": "medicaid-medicare-map",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build_frontend.mjs"
+  }
+}
