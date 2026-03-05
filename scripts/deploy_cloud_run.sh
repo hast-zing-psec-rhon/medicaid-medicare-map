@@ -27,6 +27,14 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregi
 
 ALLOWED_ORIGINS="${APP_ALLOWED_ORIGINS:-http://127.0.0.1:8000,http://localhost:8000,http://127.0.0.1:8080,http://localhost:8080}"
 ALLOWED_ORIGIN_REGEX="${APP_ALLOWED_ORIGIN_REGEX:-^https://.*\\.vercel\\.app$}"
+ENV_FILE="$(mktemp)"
+trap 'rm -f "$ENV_FILE"' EXIT
+
+cat > "$ENV_FILE" <<EOF
+APP_SERVE_FRONTEND: 'false'
+APP_ALLOWED_ORIGINS: '${ALLOWED_ORIGINS}'
+APP_ALLOWED_ORIGIN_REGEX: '${ALLOWED_ORIGIN_REGEX}'
+EOF
 
 echo "Deploying ${SERVICE_NAME} to Cloud Run (${REGION})..."
 gcloud run deploy "$SERVICE_NAME" \
@@ -34,7 +42,7 @@ gcloud run deploy "$SERVICE_NAME" \
   --region "$REGION" \
   --source . \
   --allow-unauthenticated \
-  --set-env-vars "APP_SERVE_FRONTEND=false,APP_ALLOWED_ORIGINS=${ALLOWED_ORIGINS},APP_ALLOWED_ORIGIN_REGEX=${ALLOWED_ORIGIN_REGEX}" \
+  --env-vars-file "$ENV_FILE" \
   --quiet
 
 SERVICE_URL="$(gcloud run services describe "$SERVICE_NAME" --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
