@@ -1,17 +1,60 @@
 {
   "source_stats": {
-    "cms_total_rows": 6103,
-    "cms_year_counts": {
-      "2022": 5,
-      "2023": 3534,
+    "cms_total_rows": 61452,
+    "cms_release_year_counts": {
+      "2023": 6103,
+      "2022": 6064,
+      "2021": 6053,
+      "2020": 6059,
+      "2019": 6121,
+      "2018": 6160,
+      "2017": 6174,
+      "2016": 6211,
+      "2015": 6257,
+      "2014": 6250
+    },
+    "cms_fiscal_year_end_counts": {
+      "2013": 22,
+      "2014": 3603,
+      "2015": 6222,
+      "2016": 6221,
+      "2017": 6199,
+      "2018": 6195,
+      "2019": 6146,
+      "2020": 6092,
+      "2021": 6050,
+      "2022": 6048,
+      "2023": 6090,
       "2024": 2564
     },
-    "selected_fiscal_year": 2023
+    "selected_fiscal_year": 2023,
+    "release_years_loaded": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "ownership": {
+      "hospital_enrollments_rows": 9196,
+      "hospital_all_owners_rows": 147904,
+      "mapped_ccn_count": 7094,
+      "min_owner_system_size": 2
+    },
+    "state_insurer_market_rows": 11638
   },
   "methodology": {
     "medicaid": "Net Revenue from Medicaid from CMS hospital cost reports",
     "medicare": "Estimated from Medicare IPPS payment components plus Medicare inpatient day-share proxy, capped by total net patient revenue",
-    "federal_state_split": "State-level FMAP percentages from Federal Register FY 2026 table"
+    "federal_state_split": "State-level FMAP percentages from Federal Register FY 2026 table",
+    "chain_grouping": "CMS PECOS hospital ownership mapping (owner organizations with >=2 hospitals), then facility-name keyword fallback and optional manual overrides",
+    "emma_mapping": "Facility-level not-for-profit issuer mapping sourced from data/manual/emma_issuer_map.csv",
+    "private_insurance": "Private revenue modeled from residual other revenue and ownership priors; state insurer market shares from CMS Medical Loss Ratio public use files"
   },
   "sources": [
     {
@@ -21,7 +64,19 @@
     {
       "name": "Federal Register FMAP FY2026",
       "url": "https://www.federalregister.gov/documents/full_text/html/2024/11/29/2024-27910.html"
+    },
+    {
+      "name": "CMS Hospital Enrollments (PECOS)",
+      "url": "https://data.cms.gov/provider-characteristics/medicare-provider-supplier-enrollment/hospital-enrollments"
+    },
+    {
+      "name": "CMS Hospital All Owners (PECOS)",
+      "url": "https://data.cms.gov/provider-characteristics/medicare-provider-supplier-enrollment/hospital-all-owners"
+    },
+    {
+      "name": "CMS Medical Loss Ratio Public Use Files",
+      "url": "https://www.cms.gov/cciio/resources/data-resources/mlr"
     }
   ],
-  "generated_at_utc": "2026-02-27T16:13:12.056043+00:00"
+  "generated_at_utc": "2026-02-27T21:56:17.269290+00:00"
 }

@@ -40,6 +40,12 @@ class FacilityFinancial(BaseModel):
     medicaid_dependency: float
     public_dependency: float
     medicare_method: str
+    emma_issuer_id: str = ""
+    emma_issuer_name: str = ""
+    emma_issuer_url: str = ""
+    emma_mapping_status: str = "unmapped"
+    emma_mapping_method: str = "none"
+    emma_match_score: float = 0.0
 
 
 class ChainSummary(BaseModel):
@@ -61,6 +67,11 @@ class ScenarioRequest(BaseModel):
     medicare_cut_pct: float = Field(default=0, ge=0, le=100)
     federal_medicaid_cut_pct: float = Field(default=0, ge=0, le=100)
     state_medicaid_cut_pct: float = Field(default=0, ge=0, le=100)
+    private_cut_pct: float = Field(default=0, ge=0, le=100)
+    payer_scope: str = "public_only"
+    taxonomy_view: str = "funding_source"
+    market_share_basis: str = "covered_lives"
+    insurer_cut_overrides: dict[str, float] = Field(default_factory=dict)
     state_code: Optional[str] = None
     chain_name: Optional[str] = None
 
@@ -76,12 +87,24 @@ class ScenarioResult(BaseModel):
     top_impacted_facilities: list[dict]
 
 
-MetricType = Literal["medicaid", "medicare", "public_total", "public_dependency"]
+PayerScope = Literal["public_only", "comprehensive"]
+TaxonomyView = Literal["funding_source", "carrier_ownership"]
+MarketShareBasis = Literal["covered_lives", "premium", "claims"]
+MetricType = Literal[
+    "medicaid",
+    "medicare",
+    "public_total",
+    "public_dependency",
+    "private_total",
+    "private_dependency",
+    "comprehensive_total",
+]
 OwnershipFilter = Literal["all", "for_profit", "not_for_profit", "government", "unknown"]
 SortField = Literal[
     "total_revenue",
     "medicare_revenue",
     "medicaid_revenue",
+    "private_revenue",
     "public_dependency",
     "medicare_dependency",
     "medicaid_dependency",

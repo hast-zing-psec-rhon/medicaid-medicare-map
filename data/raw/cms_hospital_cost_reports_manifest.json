@@ -1,0 +1,54 @@
+{
+  "releases": [
+    {
+      "release_year": 2023,
+      "url": "https://data.cms.gov/sites/default/files/2026-01/3c39f483-c7e0-4025-8396-4df76942e10f/CostReport_2023_Final.csv",
+      "rows": 6103
+    },
+    {
+      "release_year": 2022,
+      "url": "https://data.cms.gov/sites/default/files/2025-11/c298e529-8bee-401a-bbd8-a38e74e19ab2/CostReport_2022_Final.csv",
+      "rows": 6064
+    },
+    {
+      "release_year": 2021,
+      "url": "https://data.cms.gov/sites/default/files/2025-11/7e94fd9d-9ef2-4275-b993-299e30f5b371/CostReport_2021_Final.csv",
+      "rows": 6053
+    },
+    {
+      "release_year": 2020,
+      "url": "https://data.cms.gov/sites/default/files/2025-11/bd432d70-3689-4e8e-a8a5-5e7bf5232cb6/CostReport_2020_Final.csv",
+      "rows": 6059
+    },
+    {
+      "release_year": 2019,
+      "url": "https://data.cms.gov/sites/default/files/2025-11/832d1e75-27eb-44bb-af75-a6b827fd4fd9/CostReport_2019_Final.csv",
+      "rows": 6121
+    },
+    {
+      "release_year": 2018,
+      "url": "https://data.cms.gov/sites/default/files/2025-11/f5e15e03-0256-4e27-966a-74dfea926b72/CostReport_2018_Final.csv",
+      "rows": 6160
+    },
+    {
+      "release_year": 2017,
+      "url": "https://data.cms.gov/sites/default/files/2025-11/853560f1-b43d-4c82-8d63-0a9276dd08e5/CostReport_2017_Final.csv",
+      "rows": 6174
+    },
+    {
+      "release_year": 2016,
+      "url": "https://data.cms.gov/sites/default/files/2025-11/25d73dc8-9786-47e3-879c-14def5a73028/CostReport_2016_Final.csv",
+      "rows": 6211
+    },
+    {
+      "release_year": 2015,
+      "url": "https://data.cms.gov/sites/default/files/2025-11/d199f117-6689-4dc4-b329-57d83b62a761/CostReport_2015_Final.csv",
+      "rows": 6257
+    },
+    {
+      "release_year": 2014,
+      "url": "https://data.cms.gov/sites/default/files/2025-11/bae8e5e6-952c-4018-8866-dc24f94e31c4/CostReport_2014_Final.csv",
+      "rows": 6250
+    }
+  ]
+}

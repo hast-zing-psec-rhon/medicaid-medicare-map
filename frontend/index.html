@@ -1,146 +1,418 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Medicaid / Medicare Hospital Exposure Dashboard</title>
+    <title>Medicaid / Medicare Exposure Dashboard</title>
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    <header>
-      <h1>Medicaid / Medicare Hospital Exposure Dashboard</h1>
-      <p>Prototype using CMS hospital cost reports + FMAP split for credit-risk screening.</p>
+    <a class="skip-link" href="#mainContent">Skip to main content</a>
+
+    <header class="topbar">
+      <div class="topbar-row">
+        <div class="brand-wrap">
+          <h1>Medicaid / Medicare Exposure</h1>
+          <span id="dataVintageBadge" class="badge neutral">FY —</span>
+        </div>
+
+        <nav class="top-tabs" aria-label="Primary">
+          <button id="tabNational" class="tab active" data-view="national">National</button>
+          <button id="tabScenarios" class="tab" data-view="scenarios">Scenarios</button>
+        </nav>
+
+        <div class="global-controls">
+          <label>
+            Fiscal Year
+            <select id="yearSelect"></select>
+          </label>
+          <label>
+            Map Metric
+            <select id="metricSelect">
+              <option value="medicaid_total">Medicaid total</option>
+              <option value="medicare_total">Medicare total</option>
+              <option value="public_total">Public total</option>
+              <option value="public_dependency">Public dependency</option>
+              <option value="private_total">Private total</option>
+              <option value="private_dependency">Private dependency</option>
+              <option value="comprehensive_total">Comprehensive total</option>
+            </select>
+          </label>
+          <label>
+            Payer Scope
+            <select id="payerScopeSelect">
+              <option value="public_only" selected>Public only</option>
+              <option value="comprehensive">Comprehensive</option>
+            </select>
+          </label>
+          <label>
+            Taxonomy
+            <select id="taxonomyViewSelect">
+              <option value="funding_source" selected>Funding source</option>
+              <option value="carrier_ownership">Carrier ownership</option>
+            </select>
+          </label>
+          <label>
+            Insurer basis
+            <select id="marketShareBasisSelect">
+              <option value="covered_lives" selected>Covered lives</option>
+              <option value="premium">Premium</option>
+              <option value="claims">Claims</option>
+            </select>
+          </label>
+          <label>
+            Trend Mode
+            <select id="trendModeSelect">
+              <option value="levels">Levels</option>
+              <option value="yoy_abs">YoY delta ($ / pp)</option>
+              <option value="yoy_pct">YoY delta (%)</option>
+            </select>
+          </label>
+          <button id="themeToggle" class="btn ghost" title="Toggle light/dark theme">Theme</button>
+        </div>
+      </div>
+
+      <div class="breadcrumb-row">
+        <div id="breadcrumb" aria-live="polite">National Overview</div>
+        <div id="statusBanner" class="status-banner hidden" role="status" aria-live="polite"></div>
+      </div>
     </header>
 
-    <section class="controls">
-      <label>
-        Fiscal Year
-        <select id="yearSelect"></select>
-      </label>
-      <label>
-        Map Metric
-        <select id="metricSelect">
-          <option value="medicaid_total">Medicaid total</option>
-          <option value="medicare_total">Medicare total</option>
-          <option value="public_total">Public total (Medicare + Medicaid)</option>
-          <option value="public_dependency">Public dependency ratio</option>
-        </select>
-      </label>
-      <button id="refreshBtn">Refresh</button>
-    </section>
+    <main id="mainContent">
+      <section id="viewNational" class="view-section">
+        <section class="panel">
+          <h2>National KPIs</h2>
+          <div id="nationalKpis" class="kpi-grid kpi-grid-wide"></div>
+        </section>
 
-    <main>
-      <section class="panel large">
-        <h2>National State Map</h2>
-        <div id="stateMap"></div>
+        <section class="panel-grid two-col">
+          <section class="panel large">
+            <h2>National State Map</h2>
+            <div id="stateMap" class="chart"></div>
+          </section>
+
+          <section class="panel">
+            <h2>Top Risk States (Public Dependency)</h2>
+            <div class="table-wrap compact-wrap">
+              <table id="topRiskTable">
+                <thead>
+                  <tr>
+                    <th>State</th>
+                    <th>Public Dep</th>
+                    <th>Facilities</th>
+                    <th>Exposure</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="panel">
+          <h2>State Ranking</h2>
+          <div class="table-wrap">
+            <table id="stateTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>State</th>
+                  <th>Medicaid</th>
+                  <th>Medicare</th>
+                  <th>Fed Medicaid</th>
+                  <th>State Medicaid</th>
+                  <th title="Modeled private insurance revenue">Private</th>
+                  <th>Public Dep</th>
+                  <th title="Private revenue / total revenue">Private Dep</th>
+                  <th>Facilities</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>National Historical Trend</h2>
+          <div id="nationalTrendChart" class="chart small"></div>
+        </section>
+
+        <section class="panel" id="stateDrilldownPanel">
+          <div class="panel-head-row">
+            <h2>State Drilldown: <span id="selectedStateLabel">(none)</span></h2>
+            <span class="badge warning">Medicare modeled</span>
+            <span class="badge info">Federal/State split FMAP-based</span>
+          </div>
+
+          <div class="panel-grid two-col">
+            <section>
+              <div id="stateSummary" class="kpi-grid"></div>
+              <div class="chart-stack">
+                <div>
+                  <h3>Public Dependency Distribution</h3>
+                  <div id="histogramChart" class="chart small"></div>
+                </div>
+                <div>
+                  <h3>State Historical Trend</h3>
+                  <div id="stateTrendChart" class="chart small"></div>
+                </div>
+                <div id="stateInsurerPanel" class="hidden">
+                  <h3>Private Insurer Market Share</h3>
+                  <div id="stateInsurerMeta" class="kpi-sub"></div>
+                  <div id="stateInsurerConfidenceLegend" class="chips"></div>
+                  <div class="table-wrap compact-wrap">
+                    <table id="stateInsurerTable">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Insurer</th>
+                          <th>Share</th>
+                          <th>Premium</th>
+                          <th>Lives</th>
+                          <th>Confidence</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <div class="inline-controls">
+                <label>
+                  Analysis View
+                  <select id="analysisViewSelect">
+                    <option value="chain">Chain Decomposition</option>
+                    <option value="concentration">Concentration Bubble</option>
+                  </select>
+                </label>
+              </div>
+              <div id="chainChart" class="chart"></div>
+              <div id="bubbleChart" class="chart hidden"></div>
+              <div class="inline-controls">
+                <label>
+                  Chain Trend
+                  <select id="trendChainSelect">
+                    <option value="">Select chain</option>
+                  </select>
+                </label>
+              </div>
+              <div id="chainTrendChart" class="chart small"></div>
+            </section>
+          </div>
+
+          <div class="inline-controls">
+            <label>
+              Search
+              <input id="facilitySearch" type="search" placeholder="Facility or chain" />
+            </label>
+            <label>
+              Ownership
+              <select id="ownershipFilter">
+                <option value="all">All</option>
+                <option value="for_profit">For-profit</option>
+                <option value="not_for_profit">Not-for-profit</option>
+                <option value="government">Government</option>
+                <option value="unknown">Unknown</option>
+              </select>
+            </label>
+            <label>
+              Group by chain
+              <input id="groupByChain" type="checkbox" />
+            </label>
+            <label>
+              Sort
+              <select id="facilitySort">
+                <option value="medicaid_revenue">Medicaid revenue</option>
+                <option value="medicare_revenue">Medicare revenue</option>
+                <option value="total_revenue">Total revenue</option>
+                <option value="private_revenue">Private revenue</option>
+                <option value="public_dependency">Public dependency</option>
+                <option value="facility_name">Facility name</option>
+              </select>
+            </label>
+            <label>
+              Density
+              <select id="densityMode">
+                <option value="compact">Compact</option>
+                <option value="default" selected>Default</option>
+                <option value="comfortable">Comfortable</option>
+              </select>
+            </label>
+            <button id="clearFiltersBtn" class="btn ghost">Clear filters</button>
+            <button id="exportBtn" class="btn">Export CSV</button>
+          </div>
+          <div id="activeFilterChips" class="chips" aria-live="polite"></div>
+
+          <div class="table-wrap" id="facilityTableWrap">
+            <table id="facilityTable">
+              <thead>
+                <tr>
+                  <th class="pinned-left">Facility</th>
+                  <th>Ownership</th>
+                  <th>Chain</th>
+                  <th>Total Revenue</th>
+                  <th>Medicare</th>
+                  <th>Medicaid</th>
+                  <th>Fed Medicaid</th>
+                  <th>State Medicaid</th>
+                  <th>Private</th>
+                  <th class="pinned-right">Public Dep.</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
       </section>
 
-      <section class="panel">
-        <h2>State Ranking</h2>
-        <div class="table-wrap">
-          <table id="stateTable">
-            <thead>
-              <tr>
-                <th>State</th>
-                <th>Medicaid</th>
-                <th>Medicare</th>
-                <th>Fed Medicaid</th>
-                <th>State Medicaid</th>
-                <th>Facilities</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
+      <section id="viewScenarios" class="view-section hidden">
+        <section class="panel">
+          <h2>Scenario Builder</h2>
+          <div class="inline-controls">
+            <label>
+              Scope State
+              <select id="scenarioStateSelect">
+                <option value="">All states</option>
+              </select>
+            </label>
+            <label>
+              Scope Chain
+              <select id="scenarioChainSelect">
+                <option value="">All chains</option>
+              </select>
+            </label>
+            <label>
+              Presets
+              <select id="scenarioPresetSelect">
+                <option value="">Select preset</option>
+              </select>
+            </label>
+            <button id="savePresetBtn" class="btn ghost">Save preset</button>
+          </div>
 
-      <section class="panel" id="selectedStatePanel">
-        <h2>State Drilldown: <span id="selectedStateLabel">(none)</span></h2>
-        <div id="stateSummary" class="summary-grid"></div>
+          <div class="scenario-grid">
+            <label>
+              Medicare cut %
+              <input id="medicareCut" type="range" min="0" max="40" value="0" />
+              <span id="medicareCutVal">0%</span>
+            </label>
+            <label>
+              Federal Medicaid cut %
+              <input id="fedCut" type="range" min="0" max="40" value="0" />
+              <span id="fedCutVal">0%</span>
+            </label>
+            <label>
+              State Medicaid cut %
+              <input id="stateCut" type="range" min="0" max="40" value="0" />
+              <span id="stateCutVal">0%</span>
+            </label>
+            <label>
+              Private cut %
+              <input id="privateCut" type="range" min="0" max="40" value="0" />
+              <span id="privateCutVal">0%</span>
+            </label>
+          </div>
+          <div id="scenarioInsurerOverrides" class="panel subtle-panel hidden">
+            <h3>Insurer-specific private cuts (optional)</h3>
+            <div id="scenarioInsurerOverrideHint" class="kpi-sub"></div>
+            <div class="table-wrap compact-wrap">
+              <table id="scenarioInsurerTable">
+                <thead>
+                  <tr>
+                    <th>Insurer</th>
+                    <th>Share</th>
+                    <th>Cut %</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="inline-controls">
+            <button id="runScenarioBtn" class="btn">Run scenario</button>
+            <button id="resetScenarioBtn" class="btn ghost">Reset</button>
+          </div>
+        </section>
 
-        <div class="inline-controls">
-          <label>
-            Ownership
-            <select id="ownershipFilter">
-              <option value="all">All</option>
-              <option value="for_profit">For-profit</option>
-              <option value="not_for_profit">Not-for-profit</option>
-              <option value="government">Government</option>
-              <option value="unknown">Unknown</option>
-            </select>
-          </label>
-          <label>
-            Group by chain
-            <input id="groupByChain" type="checkbox" />
-          </label>
-          <label>
-            Sort
-            <select id="facilitySort">
-              <option value="medicaid_revenue">Medicaid revenue</option>
-              <option value="medicare_revenue">Medicare revenue</option>
-              <option value="total_revenue">Total revenue</option>
-              <option value="public_dependency">Public dependency</option>
-            </select>
-          </label>
-          <button id="exportBtn">Export CSV</button>
-        </div>
-
-        <div class="table-wrap">
-          <table id="facilityTable">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Ownership</th>
-                <th>Chain</th>
-                <th>Total Rev</th>
-                <th>Medicare</th>
-                <th>Medicaid</th>
-                <th>Fed Medicaid</th>
-                <th>State Medicaid</th>
-                <th>Public Dep.</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2>Policy Stress Scenario</h2>
-        <div class="scenario-grid">
-          <label>Medicare cut %
-            <input id="medicareCut" type="range" min="0" max="40" value="0" />
-            <span id="medicareCutVal">0%</span>
-          </label>
-          <label>Federal Medicaid cut %
-            <input id="fedCut" type="range" min="0" max="40" value="0" />
-            <span id="fedCutVal">0%</span>
-          </label>
-          <label>State Medicaid cut %
-            <input id="stateCut" type="range" min="0" max="40" value="0" />
-            <span id="stateCutVal">0%</span>
-          </label>
-        </div>
-        <button id="runScenarioBtn">Run Scenario</button>
-        <div id="scenarioSummary" class="summary-grid"></div>
-        <div class="table-wrap">
-          <table id="scenarioTable">
-            <thead>
-              <tr>
-                <th>Facility</th>
-                <th>State</th>
-                <th>Baseline Rev</th>
-                <th>Shocked Rev</th>
-                <th>Revenue at Risk</th>
-                <th>Risk %</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
+        <section class="panel">
+          <h2>Scenario Results</h2>
+          <div id="scenarioSummary" class="kpi-grid"></div>
+          <div id="tornadoChart" class="chart"></div>
+          <div class="table-wrap">
+            <table id="scenarioTable">
+              <thead>
+                <tr>
+                  <th>Facility</th>
+                  <th>State</th>
+                  <th>Baseline</th>
+                  <th>Shocked</th>
+                  <th>At Risk</th>
+                  <th>Risk %</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
       </section>
     </main>
+
+    <aside id="facilityDetailPanel" class="detail-panel hidden" aria-live="polite">
+      <div class="detail-head">
+        <h2 id="detailTitle">Facility Detail</h2>
+        <button id="closeDetailBtn" class="btn ghost">Close</button>
+      </div>
+      <div id="detailMeta" class="detail-meta"></div>
+      <div id="detailBadges" class="chips"></div>
+      <div id="detailKpis" class="kpi-grid"></div>
+      <h3>EMMA / Portfolio Linkage</h3>
+      <div id="detailEmmaMapping" class="chips"></div>
+      <div class="inline-controls">
+        <button id="detailRefreshLinkageBtn" class="btn ghost">Refresh linkage</button>
+      </div>
+      <div class="table-wrap compact-wrap">
+        <table id="detailOwnedTable">
+          <thead>
+            <tr>
+              <th>CUSIP</th>
+              <th>Description</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="table-wrap compact-wrap">
+        <table id="detailDocsTable">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Title</th>
+              <th>CUSIP</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <h3>Revenue Breakdown</h3>
+      <div id="detailBreakdownChart" class="chart small"></div>
+      <h3>Payor Mix</h3>
+      <div id="detailPayorMixChart" class="chart small"></div>
+      <h3>Historical Trajectory</h3>
+      <div id="detailTrendChart" class="chart small"></div>
+      <table class="detail-table" id="detailTable"></table>
+      <button id="detailScenarioBtn" class="btn">Run scenario for this facility</button>
+    </aside>
+
+    <div id="facilityContextMenu" class="context-menu hidden" role="menu" aria-label="Facility actions">
+      <button id="ctxOpenDetail" role="menuitem" type="button">Open Dashboard Detail</button>
+      <button id="ctxOpenEmma" role="menuitem" type="button">Open EMMA Issuer Profile</button>
+      <button id="ctxViewOwned" role="menuitem" type="button">View Owned Securities</button>
+    </div>
 
     <footer>
       <small id="sourceNote"></small>
